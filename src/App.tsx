@@ -31,8 +31,6 @@ export type TasksStateType = {
   [key: string]: Array<TaskType>
 }
 
-// TODO - add loaderrs for all thunks in reducers
-
 function App() {
 
   const todolists = useSelector<AppRootStateType, Array<TodolistDomainType>>(state => state.todolists)
@@ -84,7 +82,6 @@ function App() {
         </Toolbar>
       </AppBar>
       {status === 'loading' && <LinearProgress color="success"/>}
-      <ErrorSnackbar/>
       <Container fixed>
         <Grid container style={{padding: '20px'}}>
           <AddItemForm addItem={addTodolist}/>
@@ -114,6 +111,7 @@ function App() {
             })
           }
         </Grid>
+        <ErrorSnackbar/>
       </Container>
     </div>
   );

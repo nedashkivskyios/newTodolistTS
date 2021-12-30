@@ -36,7 +36,10 @@ export const tasksReducer = (state: TasksStateType = initialState, action: Actio
     case 'CHANGE-TASK-TITLE': {
       return {
         ...state,
-        [action.todolistId]: state[action.todolistId].map(t => t.id === action.taskId ? {...t, title: action.title} : t),
+        [action.todolistId]: state[action.todolistId].map(t => t.id === action.taskId ? {
+          ...t,
+          title: action.title,
+        } : t),
       }
     }
     case 'ADD-TODOLIST': {
@@ -96,29 +99,36 @@ export const setTasksTC = (params: { todolistId: string }) => (dispatch: ThunkDi
   dispatch(setAppStatus('loading'))
   todolistsAPI.getTasks({todolistId: params.todolistId}).then(res => {
     dispatch(setTasksAC({todolistId: params.todolistId, tasks: res.data.items}))
-    dispatch(setAppStatus('idle'))
+    dispatch(setAppStatus('succeded'))
   })
 }
 export const deleteTaskTC = (params: { todolistId: string, taskId: string }) => (dispatch: ThunkDispatchType) => {
+  dispatch(setAppStatus('loading'))
   todolistsAPI.deleteTask({todolistId: params.todolistId, taskId: params.taskId}).then(res => {
     dispatch(removeTaskAC({taskId: params.taskId, todolistId: params.todolistId}))
+    dispatch(setAppStatus('succeded'))
   })
 }
 export const addTaskTC = (params: { title: string, todolistId: string }) => (dispatch: ThunkDispatchType) => {
+  dispatch(setAppStatus('loading'))
   todolistsAPI.createTask({todolistId: params.todolistId, title: params.title}).then(res => {
     if (res.data.resultCode === 0) {
       dispatch(addTaskAC({task: res.data.data.item, todolistId: params.todolistId}))
+      dispatch(setAppStatus('succeded'))
     } else {
       if (res.data.messages.length !== 0) {
         dispatch(setAppError(res.data.messages[0]))
+        dispatch(setAppStatus('failed'))
       } else {
         dispatch(setAppError('Some error ocured'))
+        dispatch(setAppStatus('failed'))
       }
     }
   })
 }
 export const changeTaskStatusTC = (params: { taskId: string, status: TaskStatuses, todolistId: string }) =>
   (dispatch: ThunkDispatchType, getState: () => AppRootStateType) => {
+    dispatch(setAppStatus('loading'))
     const task = getState().tasks[params.todolistId].find(t => t.id === params.taskId)
     if (!task) {
       console.log('Task Not Found')
@@ -130,10 +140,12 @@ export const changeTaskStatusTC = (params: { taskId: string, status: TaskStatuse
     }
     todolistsAPI.updateTask({todolistId: params.todolistId, taskId: params.taskId, payload}).then(res => {
       dispatch(changeTaskStatusAC({taskId: params.taskId, status: params.status, todolistId: params.todolistId}))
+      dispatch(setAppStatus('succeded'))
     })
   }
 export const changeTaskTitleTC = (params: { taskId: string, title: string, todolistId: string }) =>
   (dispatch: ThunkDispatchType, getState: () => AppRootStateType) => {
+    dispatch(setAppStatus('loading'))
     const task = getState().tasks[params.todolistId].find(t => t.id === params.taskId)
     if (!task) {
       console.log('Task Not Found')
@@ -145,6 +157,7 @@ export const changeTaskTitleTC = (params: { taskId: string, title: string, todol
     }
     todolistsAPI.updateTask({todolistId: params.todolistId, taskId: params.taskId, payload}).then(res => {
         dispatch(changeTaskTitleAC({taskId: params.taskId, title: params.title, todolistId: params.todolistId}))
+        dispatch(setAppStatus('succeded'))
       },
     )
   }

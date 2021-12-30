@@ -56,31 +56,39 @@ export const setTodolistTC = () => (dispatch: ThunkDispatchType) => {
   dispatch(setAppStatus('loading'))
   todolistsAPI.getTodolists().then(res => {
     dispatch(setTodolistsAC({todolists: res.data}))
-    dispatch(setAppStatus('idle'))
+    dispatch(setAppStatus('succeded'))
   })
 }
 export const deleteTodolistTC = (params: { todolistId: string }) => (dispatch: ThunkDispatchType) => {
+  dispatch(setAppStatus('loading'))
   todolistsAPI.deleteTodolist({todolistId: params.todolistId}).then(res => {
     dispatch(removeTodolistAC({todolistId: params.todolistId}))
+    dispatch(setAppStatus('succeded'))
   })
 }
 export const createTodolistTC = (params: { title: string }) => (dispatch: ThunkDispatchType) => {
+  dispatch(setAppStatus('loading'))
   todolistsAPI.createTodolist({title: params.title})
     .then(res => {
       if (res.data.resultCode === 0) {
         dispatch(addTodolistAC({todolist: res.data.data.item}))
+        dispatch(setAppStatus('succeded'))
       } else {
         if (res.data.messages.length !== 0) {
           dispatch(setAppError(res.data.messages[0]))
+          dispatch(setAppStatus('failed'))
         } else {
           dispatch(setAppError('Some error ocured'))
+          dispatch(setAppStatus('failed'))
         }
       }
     })
 }
 export const changeTodolistTitleTC = (params: { todolistId: string, title: string }) => (dispatch: ThunkDispatchType) => {
+  dispatch(setAppStatus('loading'))
   todolistsAPI.updateTodolistTitle({todolistId: params.todolistId, title: params.title}).then(res => {
     dispatch(changeTodolistTitleAC({todolistId: params.todolistId, title: params.title}))
+    dispatch(setAppStatus('succeded'))
   })
 }
 
