@@ -1,9 +1,8 @@
 import {AddTodolistActionType, RemoveTodolistActionType, SetTodolistActionType} from './todolists-reducer';
-import {TasksStateType} from '../App';
 import {TaskStatuses, TaskType, todolistsAPI, UpdateTaskModelType} from "../api/todolists-api";
 import {Dispatch} from "redux";
 import {AppRootStateType} from "./store";
-import {AppReducerActionsType, setAppError, setAppStatus} from "./app-reducer";
+import {AppReducerActionsType, RequestAppStatuses, setAppError, setAppStatus} from "./app-reducer";
 
 
 const initialState: TasksStateType = {}
@@ -65,6 +64,15 @@ export const tasksReducer = (state: TasksStateType = initialState, action: Actio
       copyState[action.todoListId] = action.tasks
       return copyState
     }
+    case "SET-TASK-ENTITY-STATUS": {
+      return {
+        ...state,
+        [action.todolistId]: state[action.todolistId].map(t => t.id === action.taskId ? {
+          ...t,
+          taskEntityStatus: action.taskEntityStatus,
+        } : t),
+      }
+    }
     default:
       return state;
   }
@@ -93,6 +101,12 @@ export const changeTaskStatusAC = (params: { taskId: string, status: TaskStatuse
 export const changeTaskTitleAC = (params: { taskId: string, title: string, todolistId: string }) => {
   return {type: 'CHANGE-TASK-TITLE', title: params.title, todolistId: params.todolistId, taskId: params.taskId} as const
 }
+export const setTaskEntityStatus = (params: { taskId: string, taskEntityStatus: RequestAppStatuses, todolistId: string }) => ({
+  type: 'SET-TASK-ENTITY-STATUS',
+  taskId: params.taskId,
+  taskEntityStatus: params.taskEntityStatus,
+  todolistId: params.todolistId,
+} as const)
 
 // THUNK CREATORS
 export const setTasksTC = (params: { todolistId: string }) => (dispatch: ThunkDispatchType) => {
@@ -104,6 +118,7 @@ export const setTasksTC = (params: { todolistId: string }) => (dispatch: ThunkDi
 }
 export const deleteTaskTC = (params: { todolistId: string, taskId: string }) => (dispatch: ThunkDispatchType) => {
   dispatch(setAppStatus('loading'))
+  dispatch(setTaskEntityStatus({taskEntityStatus: "loading", taskId: params.taskId, todolistId: params.todolistId}))
   todolistsAPI.deleteTask({todolistId: params.todolistId, taskId: params.taskId}).then(res => {
     dispatch(removeTaskAC({taskId: params.taskId, todolistId: params.todolistId}))
     dispatch(setAppStatus('succeded'))
@@ -165,11 +180,17 @@ export const changeTaskTitleTC = (params: { taskId: string, title: string, todol
 
 // TYPES
 type ThunkDispatchType = Dispatch<ActionsType | AppReducerActionsType>
+
+export type TasksStateType = {
+  [key: string]: Array<TaskType>
+}
+
 type ActionsType = ReturnType<typeof addTaskAC>
   | ReturnType<typeof setTasksAC>
   | ReturnType<typeof removeTaskAC>
   | ReturnType<typeof changeTaskStatusAC>
   | ReturnType<typeof changeTaskTitleAC>
+  | ReturnType<typeof setTaskEntityStatus>
   | AddTodolistActionType
   | SetTodolistActionType
   | RemoveTodolistActionType

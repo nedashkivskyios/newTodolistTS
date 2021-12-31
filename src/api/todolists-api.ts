@@ -77,6 +77,7 @@ export type TaskType = {
   deadline: string | null
   addedDate: string
 }
+
 export type GetTaskResponseType = {
   items: Array<TaskType>
   totalCount: number

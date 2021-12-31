@@ -1,13 +1,13 @@
 import React, {ChangeEvent, FC, KeyboardEvent, useState} from 'react';
 import TextField from '@mui/material/TextField';
-import {setAppError} from "./state/app-reducer";
 
 type EditableSpanPropsType = {
   value: string
   onChange: (newValue: string) => void
+  disabled?: boolean
 }
 
-export const EditableSpan: FC<EditableSpanPropsType> = React.memo(function ({value, onChange, ...restProps}) {
+export const EditableSpan: FC<EditableSpanPropsType> = React.memo(function ({value, onChange, disabled, ...restProps}) {
 
   let [editMode, setEditMode] = useState(false);
   let [title, setTitle] = useState(value);
@@ -43,6 +43,7 @@ export const EditableSpan: FC<EditableSpanPropsType> = React.memo(function ({val
                  onChange={onChangeTitleHandler}
                  onBlur={activateViewMode}
                  onKeyPress={onKeyPressHandler}
+                 disabled={disabled}
                  autoFocus
     />
     : <span onDoubleClick={activateEditMode}>{value}</span>
