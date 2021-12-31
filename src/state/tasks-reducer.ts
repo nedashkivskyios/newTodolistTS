@@ -2,7 +2,8 @@ import {AddTodolistActionType, RemoveTodolistActionType, SetTodolistActionType} 
 import {TaskStatuses, TaskType, todolistsAPI, UpdateTaskModelType} from "../api/todolists-api";
 import {Dispatch} from "redux";
 import {AppRootStateType} from "./store";
-import {AppReducerActionsType, RequestAppStatuses, setAppError, setAppStatus} from "./app-reducer";
+import {AppReducerActionsType, RequestAppStatuses, setAppStatus} from "./app-reducer";
+import {handleNetworkAppError, handleServerAppError} from "../utils/error-utils";
 
 
 const initialState: TasksStateType = {}
@@ -114,14 +115,23 @@ export const setTasksTC = (params: { todolistId: string }) => (dispatch: ThunkDi
   todolistsAPI.getTasks({todolistId: params.todolistId}).then(res => {
     dispatch(setTasksAC({todolistId: params.todolistId, tasks: res.data.items}))
     dispatch(setAppStatus('succeded'))
+
+  }).catch(error => {
+    handleNetworkAppError({error, dispatch})
   })
 }
 export const deleteTaskTC = (params: { todolistId: string, taskId: string }) => (dispatch: ThunkDispatchType) => {
   dispatch(setAppStatus('loading'))
   dispatch(setTaskEntityStatus({taskEntityStatus: "loading", taskId: params.taskId, todolistId: params.todolistId}))
   todolistsAPI.deleteTask({todolistId: params.todolistId, taskId: params.taskId}).then(res => {
-    dispatch(removeTaskAC({taskId: params.taskId, todolistId: params.todolistId}))
-    dispatch(setAppStatus('succeded'))
+    if (res.data.resultCode === 0) {
+      dispatch(removeTaskAC({taskId: params.taskId, todolistId: params.todolistId}))
+      dispatch(setAppStatus('succeded'))
+    } else {
+      handleServerAppError({data: res.data, dispatch})
+    }
+  }).catch(error => {
+    handleNetworkAppError({error, dispatch})
   })
 }
 export const addTaskTC = (params: { title: string, todolistId: string }) => (dispatch: ThunkDispatchType) => {
@@ -131,14 +141,10 @@ export const addTaskTC = (params: { title: string, todolistId: string }) => (dis
       dispatch(addTaskAC({task: res.data.data.item, todolistId: params.todolistId}))
       dispatch(setAppStatus('succeded'))
     } else {
-      if (res.data.messages.length !== 0) {
-        dispatch(setAppError(res.data.messages[0]))
-        dispatch(setAppStatus('failed'))
-      } else {
-        dispatch(setAppError('Some error ocured'))
-        dispatch(setAppStatus('failed'))
-      }
+      handleServerAppError({data: res.data, dispatch})
     }
+  }).catch(error => {
+    handleNetworkAppError({error, dispatch})
   })
 }
 export const changeTaskStatusTC = (params: { taskId: string, status: TaskStatuses, todolistId: string }) =>
@@ -154,8 +160,14 @@ export const changeTaskStatusTC = (params: { taskId: string, status: TaskStatuse
       status: params.status,
     }
     todolistsAPI.updateTask({todolistId: params.todolistId, taskId: params.taskId, payload}).then(res => {
-      dispatch(changeTaskStatusAC({taskId: params.taskId, status: params.status, todolistId: params.todolistId}))
-      dispatch(setAppStatus('succeded'))
+      if (res.data.resultCode === 0) {
+        dispatch(changeTaskStatusAC({taskId: params.taskId, status: params.status, todolistId: params.todolistId}))
+        dispatch(setAppStatus('succeded'))
+      } else {
+        handleServerAppError({data: res.data, dispatch})
+      }
+    }).catch(error => {
+      handleNetworkAppError({error, dispatch})
     })
   }
 export const changeTaskTitleTC = (params: { taskId: string, title: string, todolistId: string }) =>
@@ -171,10 +183,16 @@ export const changeTaskTitleTC = (params: { taskId: string, title: string, todol
       title: params.title,
     }
     todolistsAPI.updateTask({todolistId: params.todolistId, taskId: params.taskId, payload}).then(res => {
-        dispatch(changeTaskTitleAC({taskId: params.taskId, title: params.title, todolistId: params.todolistId}))
-        dispatch(setAppStatus('succeded'))
+        if (res.data.resultCode === 0) {
+          dispatch(changeTaskTitleAC({taskId: params.taskId, title: params.title, todolistId: params.todolistId}))
+          dispatch(setAppStatus('succeded'))
+        } else {
+          handleServerAppError({data: res.data, dispatch})
+        }
       },
-    )
+    ).catch(error => {
+      handleNetworkAppError({error, dispatch})
+    })
   }
 
 

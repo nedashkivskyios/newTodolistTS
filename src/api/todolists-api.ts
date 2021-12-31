@@ -14,27 +14,27 @@ export const todolistsAPI = {
   },
   createTodolist(params: { title: string }) {
     const payload = {title: params.title}
-    return instance.post<TodolistResponseType<{ item: TodolistType }>>('/todo-lists', payload)
+    return instance.post<ResponseType<{ item: TodolistType }>>('/todo-lists', payload)
   },
   deleteTodolist(params: { todolistId: string }) {
-    return instance.delete<TodolistResponseType>(`/todo-lists/${params.todolistId}`)
+    return instance.delete<ResponseType>(`/todo-lists/${params.todolistId}`)
   },
   updateTodolistTitle(params: { todolistId: string, title: string }) {
     const payload = {title: params.title}
-    return instance.put<TodolistResponseType>(`/todo-lists/${params.todolistId}`, payload)
+    return instance.put<ResponseType>(`/todo-lists/${params.todolistId}`, payload)
   },
   getTasks(params: { todolistId: string }) {
     return instance.get<GetTaskResponseType>(`/todo-lists/${params.todolistId}/tasks`)
   },
   createTask(params: { todolistId: string, title: string }) {
     const payload = {title: params.title}
-    return instance.post<TasksResponseType<{ item: TaskType }>>(`/todo-lists/${params.todolistId}/tasks`, payload)
+    return instance.post<ResponseType<{ item: TaskType }>>(`/todo-lists/${params.todolistId}/tasks`, payload)
   },
   deleteTask(params: { todolistId: string, taskId: string }) {
-    return instance.delete<TasksResponseType>(`/todo-lists/${params.todolistId}/tasks/${params.taskId}`)
+    return instance.delete<ResponseType>(`/todo-lists/${params.todolistId}/tasks/${params.taskId}`)
   },
   updateTask(params: { todolistId: string, taskId: string, payload: UpdateTaskModelType }) {
-    return instance.put<any, AxiosResponse<TasksResponseType<{ item: TaskType }>>, UpdateTaskModelType>(`/todo-lists/${params.todolistId}/tasks/${params.taskId}`, params.payload)
+    return instance.put<any, AxiosResponse<ResponseType<{ item: TaskType }>>, UpdateTaskModelType>(`/todo-lists/${params.todolistId}/tasks/${params.taskId}`, params.payload)
   },
 }
 
@@ -59,7 +59,7 @@ export type TodolistType = {
   addedDate: string
   order: number
 }
-export type TodolistResponseType<D = {}> = {
+export type ResponseType<D = {}> = {
   data: D
   messages: string[]
   fieldsErrors: string[]
@@ -82,12 +82,6 @@ export type GetTaskResponseType = {
   items: Array<TaskType>
   totalCount: number
   error: string | null
-}
-export type TasksResponseType<D = {}> = {
-  data: D
-  messages: string[]
-  fieldsErrors: string[]
-  resultCode: number
 }
 export type UpdateTaskModelType = {
   title: string
